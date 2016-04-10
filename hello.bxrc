@@ -1,0 +1,6 @@
+# what disk image will be used
+floppya: 1_44=so.img, status=inserted
+# choose the boot disk.
+boot: a 
+#debug
+display_library: win32, options="gui_debug"

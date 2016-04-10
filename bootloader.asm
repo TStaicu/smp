@@ -1,5 +1,5 @@
 [BITS 16]
-[ORG 0x7C00]
+[ORG 0x7c00]
 
 jmp bootload ;sari la bootloader
 
@@ -79,6 +79,7 @@ DW 0xAA55 ;end of bootloader (2 bytes)
 ;start of kernel
 sok:
 ;set print-registers
+
 mov ah, 0x00 ;graphic mode
 mov al, 0x10 ; Graphics       320 x 200
 int 0x10; interrupt 10
