@@ -27,27 +27,33 @@ mov	es, ax
 mov	fs, ax
 mov	gs, ax
 
+call init_graphics ;initalise graphics mode and colours
 init:
 
 
-	call init_graphics ;initalise graphics mode and colours
+	mov al,0x00               
+	call draw_ball_sprite 
+	mov al,0x00
+	mov dx,195
+	mov cx,word [pallete_x]
+	call draw_pallete_sprite
+	mov al,0x9
 	call print_walls
 	mov dx,195
 	call stdin_read
 	mov cx,word [pallete_x]
+	mov al,0xf
 	call draw_pallete_sprite
 	call calc_ball_position_x
 	call calc_ball_position_y
 	call collision_detect
+	mov al,2
 	call draw_ball_sprite
 	call delay
 	jmp init
 
-
-
-
-
-JMP $ ;hang
+;no man's land :)
+hlt
 
 PrintString:
 .next_char:
@@ -60,9 +66,8 @@ JMP .next_char
 .exit_char:
 RET
 
-welcome db 'Hello world from the kernel!', 13, 10, 0
-decision db 'Press any key to draw image !',13,10,0
-char 	 db 'obcdef',13,10,0
+;variable definition space 
+lost db 'Congratulations! YOU LOST!',13,10,0
 coordinate_x db 0 	; x coordinate_x
 coordinate_y db 50  ;y coordinate
 len			 dw 0
@@ -73,6 +78,7 @@ ball_y_speed dw 2
 ball_x_speed_up dw 1
 ball_x_speed_left dw 1
 pallete_x dw 0
+;end variable deffinition space
 
   
 delay:
@@ -154,12 +160,7 @@ read_char:
 	push bx
 	ret
 	
-print_welcome_message:
-	MOV SI, welcome ;move msg to SI-pointer
-	CALL PrintString ;call function to print SI (msg)
-	mov si,decision
-	call PrintString
-	ret
+
 
 init_graphics:
 	mov ah, 0x00 ;graphic mode
@@ -167,11 +168,15 @@ init_graphics:
 	int 0x10; interrupt 10
 	ret
 
-
+clr_scr:
+	mov ah, 0x06
+	mov al, 0
+	int 10h
+	ret
 
 	
 draw_pallete_sprite:
-	mov al,0xf
+	
 	push dx
 	push cx
 	mov word [len],64;pallete deffinition length
@@ -217,7 +222,7 @@ draw_pallete_sprite:
 	ret
 
 draw_ball_sprite:
-	mov al,2
+	
 	mov cx,word [ball_x]
 	mov dx,word [ball_y]
 	
@@ -376,6 +381,11 @@ collision_detect:;collision detection system
 	cmp ax,5
 	jbe reverse_x_speed_right
 	pcd: ;pallete collision detection	
+	mov ax,word[ball_y]
+	cmp ax,188
+	jae bpcms ;ball pallete collision management system
+	
+	cdr:
 	ret
 
 reverse_y_speed:
@@ -389,4 +399,30 @@ reverse_x_speed_left:
 reverse_x_speed_right:
 	mov word[ball_x_speed_left],0
 	jmp pcd
+	
+bpcms:
+	mov ax,word[ball_x]
+	mov bx,word[pallete_x];check right attributes(if the ball is in the right of pallete)
+	add ax,10			 ;take into account the width of the ball
+	cmp ax,bx
+	jae bpcmsl   		;check left 
+	jmp loose ;collision detection system return
+	
+bpcmsl:;check left hand attributes
+	mov ax,word[ball_x]
+	add bx,64
+	cmp ax,bx
+	jbe reverse_y_speed_pallete
+	jmp loose
+
+reverse_y_speed_pallete:
+	mov word[ball_x_speed_up],1
+	jmp cdr
+	
+loose:
+	call restore_teletype
+	mov si,lost
+	call PrintString
+	hlt
+	
 
