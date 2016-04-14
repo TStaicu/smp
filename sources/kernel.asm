@@ -32,6 +32,9 @@ init:
 
 	call init_graphics ;initalise graphics mode and colours
 	call print_walls
+	mov dx,330
+	mov cx,100
+	call draw_pallete_sprite
 	hlt
 
 
@@ -184,7 +187,51 @@ read_coordinate:;get 3 decimals
 	add [coordinate_x],bx
 	push ax
 	call print_from_stack
+	ret
 	
+draw_pallete_sprite:
+	push dx
+	push cx
+	mov word [len],64;pallete deffinition length
+	call print_h_line
+	pop cx
+	pop dx ;restore ptrs
+	push dx
+	push cx
+	dec dx
+	call print_h_line
+	pop cx
+	pop dx ;restore ptrs
+	push dx
+	push cx
+	dec dx
+	call print_h_line
+	pop cx
+	pop dx ;restore ptrs
+	push dx
+	push cx
+	dec dx
+	call print_h_line
+	pop cx
+	pop dx ;restore ptrs
+	push dx
+	push cx
+	dec dx
+	call print_h_line
+	pop cx
+	pop dx ;restore ptrs
+	push dx
+	push cx
+	dec dx
+	call print_h_line
+	pop cx
+	pop dx ;restore ptrs
+	push dx
+	push cx
+	dec dx
+	call print_h_line
+	pop cx
+	pop dx
 	ret
 	
 
