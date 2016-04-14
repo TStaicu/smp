@@ -32,9 +32,10 @@ init:
 
 	call init_graphics ;initalise graphics mode and colours
 	call print_walls
-	mov dx,330
+	mov dx,150
 	mov cx,100
 	call draw_pallete_sprite
+	call draw_ball_sprite
 	hlt
 
 
@@ -60,6 +61,8 @@ char 	 db 'obcdef',13,10,0
 coordinate_x db 0 	; x coordinate_x
 coordinate_y db 50  ;y coordinate
 len			 db 0
+ball_x db 150
+ball_y db 100
   
 delay:
 	push cx ;save registers
@@ -81,19 +84,20 @@ h equ 5
 
 print_walls:
 	;print top
+	mov al,0xf
 	mov cx,1
 	mov dx,1
-	mov word [len],640
+	mov word [len],320
 	call print_h_line
 	;print left wall
 	mov cx,1
 	mov dx,1
-	mov word [len],340
+	mov word [len],200
 	call print_v_line
 	;print right wall
-	mov cx,637
+	mov cx,318
 	mov dx,1
-	mov word [len],340
+	mov word [len],200
 	call print_v_line
 	
 	ret
@@ -103,7 +107,6 @@ print_v_line:
 	mov bx,dx        
 	add bx,[len]
 	prt_v: 
-		mov al, 15      ; white
 		mov ah, 0ch    ; put pixel
 		int 10h
 		;call delay
@@ -117,7 +120,6 @@ print_h_line: ;cx x_coordinate dx y coordinate len-length
 	mov bx,cx        
 	add bx,[len]
 	prt_h: 
-		mov al, 15      ; white
 		mov ah, 0ch    ; put pixel
 		int 10h
 		;call delay
@@ -150,46 +152,15 @@ print_welcome_message:
 
 init_graphics:
 	mov ah, 0x00 ;graphic mode
-	mov al, 0x10 ; Graphics       320 x 200
+	mov al, 0x13 ; Graphics       320 x 200
 	int 0x10; interrupt 10
 	ret
 
-print_from_stack:;al is number of characters
-	pop bx
-	pop ax
-	push bx
-	call restore_teletype
-	int 10h
-	ret
-	
-read_coordinate:;get 3 decimals
-	call read_char
-	pop ax
-	mov bx,ax
-	sub bx,48
-	imul ax,0x64
-	add [coordinate_x],bx
-	push ax
-	call print_from_stack
-	call read_char
-	pop ax
-	mov bx,ax
-	mov cx,10
-	sub bx,48
-	imul bx,10
-	add [coordinate_x],bx
-	push ax
-	call print_from_stack
-	call read_char
-	pop ax
-	mov bx,ax
-	sub bx,48
-	add [coordinate_x],bx
-	push ax
-	call print_from_stack
-	ret
+
+
 	
 draw_pallete_sprite:
+	mov al,0xf
 	push dx
 	push cx
 	mov word [len],64;pallete deffinition length
@@ -233,5 +204,72 @@ draw_pallete_sprite:
 	pop cx
 	pop dx
 	ret
+
+draw_ball_sprite:
+	mov al,2
+	mov cx,word [ball_x]
+	mov dx,word [ball_y]
 	
+	dec dx
+	push dx
+	push cx
+	mov word [len],10;pallete deffinition length
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	dec dx
+	push dx
+	push cx
+	call print_h_line
+	pop cx
+	pop dx
+	ret
 
