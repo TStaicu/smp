@@ -31,20 +31,10 @@ init:
 
 
 	call init_graphics ;initalise graphics mode and colours
-	call restore_teletype;restore teletype restore
-	call print_welcome_message;print welcome message
-	call read_char;read a character
-	;call restore_teletype
-	call print_from_stack
-	call read_coordinate
-	
-	call read_char
-	call draw
-	jmp init
+	call print_walls
+	hlt
 
-; dimensions of the rectangle:
-; width: 10 pixels
-; height: 5 pixels
+
 
 
 
@@ -64,8 +54,9 @@ RET
 welcome db 'Hello world from the kernel!', 13, 10, 0
 decision db 'Press any key to draw image !',13,10,0
 char 	 db 'obcdef',13,10,0
-coordinate_x db 0 ; x coordinate_x
-coordinate_y db 50 ;y coordinate
+coordinate_x db 0 	; x coordinate_x
+coordinate_y db 50  ;y coordinate
+len			 db 0
   
 delay:
 	push cx ;save registers
@@ -85,71 +76,31 @@ h equ 5
 
 
 
-; set video mode 13h - 320x200
+print_walls:
+	;print left wall
+	mov cx,1
+	mov dx,1
+	mov word [len],100
+	call print_h_line
+	ret
 
-draw:   
-	mov ah, 0
-    mov al, 13h 
-    int 10h
+print_v_line:
+	ret
 
-
-	; draw upper line:
-
-		mov cx, coordinate_x+w  ; column
-		mov dx, coordinate_y     ; row
-		mov al, 15     ; white
-	u1: mov ah, 0ch    ; put pixel
+print_h_line: ;cx x_coordinate dx y coordinate len-length
+	mov bx,cx        
+	add bx,[len]
+	prt: 
+		mov al, 15      ; white
+		mov ah, 0ch    ; put pixel
 		int 10h
-		call delay
-		dec cx
-		cmp cx, coordinate_x
-		jae u1
-	 
-	; draw bottom line:
+		;call delay
+		inc cx
+		cmp cx, bx
+		jb prt
+	ret
 
-		mov cx, coordinate_x+w  ; column
-		mov dx, coordinate_y+h   ; row
-		mov al, 15     ; white
-	u2: mov ah, 0ch    ; put pixel
-		int 10h
-		call delay
-		dec cx
-		cmp cx, coordinate_x
-		ja u2
-	 
-	; draw left line:
 
-		mov cx, coordinate_x    ; column
-		mov dx, coordinate_y+h   ; row
-		mov al, 15     ; white
-	u3: mov ah, 0ch    ; put pixel
-		int 10h
-		call delay
-		dec dx
-		cmp dx, coordinate_y
-		ja u3 
-		
-		
-	; draw right line:
-
-		mov cx, coordinate_x+w  ; column
-		mov dx, coordinate_y+h   ; row
-		mov al, 15     ; white
-	u4: mov ah, 0ch    ; put pixel
-		int 10h
-		call delay
-		dec dx
-		cmp dx, coordinate_y
-		ja u4     
-	 
-
-	; pause the screen for dos compatibility:
-
-	;wait for keypress
-	  mov ah,00
-	  int 16h			
-	  ret
-	  
 restore_teletype:
 	MOV AH, 0x0E ;function nr
 	MOV BH, 0x00 ;page
@@ -191,22 +142,23 @@ read_coordinate:;get 3 decimals
 	mov bx,ax
 	sub bx,48
 	mul ax,0x64
-	add coordinate_x,bx
+	add [coordinate_x],bx
+	push ax
+	call print_from_stack
+	call read_char
+	pop ax
+	mov bx,ax
+	mov cx,10
+	sub bx,48
+	imul bl,cx
+	add [coordinate_x],bx
 	push ax
 	call print_from_stack
 	call read_char
 	pop ax
 	mov bx,ax
 	sub bx,48
-	mul bx,10
-	add coordinate_x,bx
-	push ax
-	call print_from_stack
-	call read_char
-	pop ax
-	mov bx,ax
-	sub bx,48
-	add coordinate_x,bx
+	add [coordinate_x],bx
 	push ax
 	call print_from_stack
 	
