@@ -36,6 +36,9 @@ init:
 	call stdin_read
 	mov cx,word [pallete_x]
 	call draw_pallete_sprite
+	call calc_ball_position_x
+	call calc_ball_position_y
+	call collision_detect
 	call draw_ball_sprite
 	call delay
 	jmp init
@@ -63,8 +66,12 @@ char 	 db 'obcdef',13,10,0
 coordinate_x db 0 	; x coordinate_x
 coordinate_y db 50  ;y coordinate
 len			 dw 0
-ball_x dw 150
-ball_y dw 100
+ball_x dw 50
+ball_y dw 150
+ball_x_speed dw 2
+ball_y_speed dw 2
+ball_x_speed_up dw 1
+ball_x_speed_left dw 1
 pallete_x dw 0
 
   
@@ -73,7 +80,7 @@ delay:
 	push dx
 	push ax
 	MOV     CX, 00h ;number of microseconds 186a0- 0.1 s
-	MOV     DX, 86a0h
+	MOV     DX, 0xffff
 	MOV     AH, 86h ;wait  (interrupt 15)
 	INT     15h		;interrupt 15
 	pop ax ;restore registers
@@ -309,4 +316,77 @@ dec_plt: ;decrement pallete position
 	sub word [pallete_x],3
 	dc:
 	ret
+
+calc_ball_position_y:
+	;up/down position calculation
+	cmp word [ball_x_speed_up],1
+	je inc_ball_up
+	jne dec_ball_up
+	yrt:
+	ret
 	
+calc_ball_position_x:
+	cmp word [ball_x_speed_left],1;left/right position calculation
+	je dec_ball_left
+	jne inc_ball_left
+	xrt:
+	ret
+	
+inc_ball_up:
+	push ax
+	mov ax,word [ball_y]
+	sub ax,word [ball_y_speed]
+	mov word [ball_y],ax
+	pop ax
+	jmp yrt
+
+dec_ball_up:
+	push ax
+	mov ax,word [ball_y]
+	add ax,word [ball_y_speed]
+	mov word [ball_y],ax
+	pop ax
+	jmp yrt
+	
+inc_ball_left:
+	push ax
+	mov ax,word [ball_x]
+	add ax,word [ball_x_speed]
+	mov word [ball_x],ax
+	pop ax
+	jmp xrt
+
+dec_ball_left:
+	push ax
+	mov ax,word [ball_x]
+	sub ax,word [ball_x_speed]
+	mov word [ball_x],ax
+	pop ax
+	jmp xrt
+	
+collision_detect:;collision detection system
+	mov ax,word[ball_y]
+	cmp ax,10 ;;collision with top wall
+	jbe reverse_y_speed
+	rev_y:
+	mov ax,word[ball_x];;collision detect with right wall
+	cmp ax,305
+	jae reverse_x_speed_left
+	rev_l:
+	cmp ax,5
+	jbe reverse_x_speed_right
+	pcd: ;pallete collision detection	
+	ret
+
+reverse_y_speed:
+	mov word[ball_x_speed_up],0
+	jmp rev_y
+
+reverse_x_speed_left:
+	mov word[ball_x_speed_left],1
+	jmp rev_l
+
+reverse_x_speed_right:
+	mov word[ball_x_speed_left],0
+	jmp pcd
+
