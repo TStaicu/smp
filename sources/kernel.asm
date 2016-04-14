@@ -32,11 +32,13 @@ init:
 
 	call init_graphics ;initalise graphics mode and colours
 	call print_walls
-	mov dx,150
-	mov cx,100
+	mov dx,195
+	call stdin_read
+	mov cx,word [pallete_x]
 	call draw_pallete_sprite
 	call draw_ball_sprite
-	hlt
+	call delay
+	jmp init
 
 
 
@@ -60,15 +62,17 @@ decision db 'Press any key to draw image !',13,10,0
 char 	 db 'obcdef',13,10,0
 coordinate_x db 0 	; x coordinate_x
 coordinate_y db 50  ;y coordinate
-len			 db 0
-ball_x db 150
-ball_y db 100
+len			 dw 0
+ball_x dw 150
+ball_y dw 100
+pallete_x dw 0
+
   
 delay:
 	push cx ;save registers
 	push dx
 	push ax
-	MOV     CX, 01h ;number of microseconds 186a0- 0.1 s
+	MOV     CX, 00h ;number of microseconds 186a0- 0.1 s
 	MOV     DX, 86a0h
 	MOV     AH, 86h ;wait  (interrupt 15)
 	INT     15h		;interrupt 15
@@ -273,3 +277,36 @@ draw_ball_sprite:
 	pop dx
 	ret
 
+stdin_read:;check stdin buffer
+	mov ah,0x01
+	int 16h
+	jnz sr
+	ret
+
+sr:;read from stdin buffer,and empty buffer (00h)
+	mov ah,00h
+	int 16h
+	cmp ah,77
+	je inc_plt
+	cmp ah,75
+	je dec_plt
+	ret
+
+inc_plt: ;increment pallete position
+	mov ah,0
+	int 21h
+	cmp word [pallete_x],255
+	ja rti
+	add word [pallete_x],3
+	rti:
+	ret
+	
+dec_plt: ;decrement pallete position
+	mov ah,0
+	int 21h
+	cmp word [pallete_x],3
+	jb dc
+	sub word [pallete_x],3
+	dc:
+	ret
+	
