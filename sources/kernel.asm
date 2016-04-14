@@ -77,27 +77,50 @@ h equ 5
 
 
 print_walls:
+	;print top
+	mov cx,1
+	mov dx,1
+	mov word [len],640
+	call print_h_line
 	;print left wall
 	mov cx,1
 	mov dx,1
-	mov word [len],100
-	call print_h_line
+	mov word [len],340
+	call print_v_line
+	;print right wall
+	mov cx,637
+	mov dx,1
+	mov word [len],340
+	call print_v_line
+	
 	ret
+	
 
 print_v_line:
+	mov bx,dx        
+	add bx,[len]
+	prt_v: 
+		mov al, 15      ; white
+		mov ah, 0ch    ; put pixel
+		int 10h
+		;call delay
+		inc dx
+		cmp dx, bx
+		jb prt_v
+	ret
 	ret
 
 print_h_line: ;cx x_coordinate dx y coordinate len-length
 	mov bx,cx        
 	add bx,[len]
-	prt: 
+	prt_h: 
 		mov al, 15      ; white
 		mov ah, 0ch    ; put pixel
 		int 10h
 		;call delay
 		inc cx
 		cmp cx, bx
-		jb prt
+		jb prt_h
 	ret
 
 
@@ -141,7 +164,7 @@ read_coordinate:;get 3 decimals
 	pop ax
 	mov bx,ax
 	sub bx,48
-	mul ax,0x64
+	imul ax,0x64
 	add [coordinate_x],bx
 	push ax
 	call print_from_stack
@@ -150,7 +173,7 @@ read_coordinate:;get 3 decimals
 	mov bx,ax
 	mov cx,10
 	sub bx,48
-	imul bl,cx
+	imul bx,10
 	add [coordinate_x],bx
 	push ax
 	call print_from_stack
