@@ -31,22 +31,22 @@ call init_graphics ;initalise graphics mode and colours
 init:
 
 
-	mov al,0x00               
-	call draw_ball_sprite 
-	mov al,0x00
-	mov dx,195
+	mov al,0x00               	;clear screen
+	call draw_ball_sprite     	;clear ball sptrite
+	mov al,0x00				  	;force colour change
+	mov dx,195				  	;reset pallete pointers
 	mov cx,word [pallete_x]
-	call draw_pallete_sprite
-	mov al,0x9
+	call draw_pallete_sprite 	;clear pallete
+	mov al,0x9					;force colour change dor walls
 	call print_walls
 	mov dx,195
-	call stdin_read
+	call stdin_read				;check keyboard input
 	mov cx,word [pallete_x]
 	mov al,0xf
-	call draw_pallete_sprite
-	call calc_ball_position_x
+	call draw_pallete_sprite	;draw game
+	call calc_ball_position_x	
 	call calc_ball_position_y
-	call collision_detect
+	call collision_detect 		;collision detect
 	mov al,2
 	call draw_ball_sprite
 	call delay
